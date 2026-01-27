@@ -1,7 +1,7 @@
 import * as pulumi from "@pulumi/pulumi";
 import * as command from "@pulumi/command";
 import * as k8s from "@pulumi/kubernetes";
-import * as rabbitmq from "@pulumi/rabbitmq";
+import { get } from "http";
 
 // Define cluster name
 const clusterName = "kind-pulumi";
@@ -95,23 +95,26 @@ const waitForRabbitMQ = new command.local.Command("wait-for-rabbitmq", {
     create: `for i in {1..60}; do kubectl --kubeconfig=/tmp/kind-kubeconfig-${clusterName}.yaml get pod -l app.kubernetes.io/name=ldap-rabbitmq-cluster -n rabbitmq-system 2>/dev/null && kubectl --kubeconfig=/tmp/kind-kubeconfig-${clusterName}.yaml wait --for=condition=ready pod -l app.kubernetes.io/name=ldap-rabbitmq-cluster -n rabbitmq-system --timeout=10s && break || sleep 5; done`,
 }, { dependsOn: [rabbitmqCluster, writeKubeconfig] });
 
-const test = new rabbitmq.User("test", {
-    name: "test",
-    password: "test",
-    tags: [
-        "administrator",
-        "management",
-    ],
-});
-
 // apply test queue from test_rabbit.yaml
 const applyTestQueue = new command.local.Command("apply-test-queue", {
     create: `kubectl --kubeconfig=/tmp/kind-kubeconfig-${clusterName}.yaml apply -f ${process.cwd()}/test_rabbit.yaml -n rabbitmq-system`,
     delete: `kubectl --kubeconfig=/tmp/kind-kubeconfig-${clusterName}.yaml delete --ignore-not-found=true -f ${process.cwd()}/test_rabbit.yaml -n rabbitmq-system || true`,
 }, { dependsOn: [waitForRabbitMQ] });
 
+// Get the default user secret
+const defaultUserSecret = k8s.core.v1.Secret.get("rabbitmq-default-user", 
+    pulumi.interpolate`rabbitmq-system/ldap-rabbitmq-cluster-default-user`,
+    { provider: k8sProvider, dependsOn: [waitForRabbitMQ] }
+);
+
 // Export outputs
 export const clusterNameOutput = clusterName;
 // export const kubeconfig = getKubeconfig.stdout;
 export const portForwardCommand = `kubectl --kubeconfig=/tmp/kind-kubeconfig-${clusterName}.yaml port-forward -n rabbitmq-system svc/ldap-rabbitmq-cluster 5672:5672 15672:15672`;
 export const rabbitmqManagementUrl = `http://localhost:15672/`;
+export const rabbitmqDefaultUsername = defaultUserSecret.data.apply(data => 
+    Buffer.from(data["username"], "base64").toString()
+);
+export const rabbitmqDefaultPassword = defaultUserSecret.data.apply(data => 
+    pulumi.secret(Buffer.from(data["password"], "base64").toString())
+);

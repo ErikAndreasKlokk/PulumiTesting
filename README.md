@@ -42,7 +42,7 @@ pulumi config set kubernetes:context my-cluster-context
 
 3. Open your web browser and navigate to `http://localhost:15672/`.
 
-4. Use the exported RabbitMQ default username and password to log in.
+4. Use the exported RabbitMQ username and password to log in.
 
     ```bash
     pulumi stack output --show-secrets
@@ -59,7 +59,7 @@ pulumi config set kubernetes:context my-cluster-context
 7. Run the test script:
 
     ```bash
-    python3 test_rabbit.py -u test -p test -m "Hello" -q q.test -v Test
+    python3 test_rabbit.py -u <username> -p <password> -m "Hello" -q q.test -v Test
     ```
 
 8. To destroy the deployed resources:
