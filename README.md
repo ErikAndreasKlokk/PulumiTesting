@@ -37,7 +37,7 @@ pulumi config set kubernetes:context my-cluster-context
 2. After deployment, you can access the RabbitMQ management interface by port-forwarding the service in another terminal window:
 
     ```bash
-    kubectl --kubeconfig=/tmp/kind-kubeconfig-<cluster-name>.yaml port-forward -n rabbitmq-system svc/ldap-rabbitmq-cluster 5672:5672 15672:15672
+    kubectl --kubeconfig=/tmp/kind-kubeconfig-kind-pulumi.yaml port-forward -n rabbitmq-system svc/ldap-rabbitmq-cluster 5672:5672 15672:15672
     ```
 
 3. Open your web browser and navigate to `http://localhost:15672/`.
@@ -59,7 +59,7 @@ pulumi config set kubernetes:context my-cluster-context
 7. Run the test script:
 
     ```bash
-    python3 test_rabbit.py -u <username> -p <password> -m "Hello" -q q.test -v Test
+    python3 test_rabbit.py -u test -p test -m "Hello" -q q.test -v Test
     ```
 
 8. To destroy the deployed resources:
