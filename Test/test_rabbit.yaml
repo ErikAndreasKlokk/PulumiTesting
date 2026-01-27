@@ -1,0 +1,54 @@
+apiVersion: rabbitmq.com/v1beta1
+kind: Vhost
+metadata:
+  name: test
+  namespace: rabbitmq-system
+spec:
+  name: Test
+  rabbitmqClusterReference:
+    name: ldap-rabbitmq-cluster
+    namespace: rabbitmq-system
+
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Queue
+metadata:
+  name: q.test
+  namespace: rabbitmq-system
+spec:
+  name: q.test
+  autoDelete: false
+  durable: false
+  rabbitmqClusterReference:
+    name: ldap-rabbitmq-cluster
+  vhost: Test
+
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Exchange
+metadata:
+  name: ex.test
+  namespace: rabbitmq-system
+spec:
+  name: ex.test
+  type: direct
+  autoDelete: false
+  durable: true
+  rabbitmqClusterReference:
+    name: ldap-rabbitmq-cluster
+  vhost: Test
+
+---
+apiVersion: rabbitmq.com/v1beta1
+kind: Binding
+metadata:
+  name: test-binding
+  namespace: rabbitmq-system
+spec:
+  source: ex.test
+  destination: q.test
+  destinationType: queue
+  rabbitmqClusterReference:
+    name: ldap-rabbitmq-cluster
+  routingKey: test.process
+  vhost: Test

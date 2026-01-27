@@ -1,0 +1,12 @@
+name: Test
+description: A minimal Kubernetes TypeScript Pulumi program
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+config:
+  docker:host:
+    value: unix:///Users/erik.klokk/.rd/docker.sock
+  pulumi:tags:
+    value:
+      pulumi:template: kubernetes-typescript
