@@ -60,6 +60,8 @@ pulumi config set kubernetes:context my-cluster-context
 
     ```bash
     python3 test_rabbit.py -u <username> -p <password> -m "Hello" -q q.test -v Test
+
+    python3 test_rabbit.py -u <username> -p <password> -r -q q.test -v Test
     ```
 
 8. To destroy the deployed resources:
